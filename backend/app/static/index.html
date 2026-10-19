@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SIGNALTRACE — Evidence-first financial research</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23087e79'/%3E%3Cpath d='M5 19l5-6 5 4 6-9 6 7' fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#eef3f7;--surface:#ffffff;--surface2:#f5f8fb;--ink:#102238;--ink2:#3c5067;--muted:#6c7d90;--line:#dce5ed;--line2:#eaf0f5;
+  --brand:#087f78;--brand-ink:#fff;--brand-soft:#dff5f1;--navy:#0b1c2d;
+  --good:#16794c;--good-bg:#def4e8;--warn:#a56300;--warn-bg:#fff0d1;--bad:#a8362a;--bad-bg:#fde6e2;--info:#2b5f9e;--info-bg:#e3eefb;
+  --c1:#087e79;--c2:#3b6fb6;--c3:#c9822b;--c4:#8a5fb0;--c5:#c4524a;
+  --shadow:0 1px 2px #10243a08,0 10px 30px #10243a0b;--radius:16px;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0b1522;--surface:#121f30;--surface2:#16263a;--ink:#e6eef7;--ink2:#b7c6d8;--muted:#8a9bb0;--line:#243650;--line2:#1b2b42;
+  --brand:#3fc4bb;--brand-ink:#06231f;--brand-soft:#12383a;--navy:#0a1320;
+  --good:#5fd39a;--good-bg:#123325;--warn:#f0b455;--warn-bg:#3a2b0f;--bad:#f2897d;--bad-bg:#40191a;--info:#79aef0;--info-bg:#16304f;
+  --c1:#3fc4bb;--c2:#79aef0;--c3:#e0a24f;--c4:#b895dd;--c5:#ec8179;--shadow:0 1px 2px #0006,0 6px 22px #0004}}
+:root[data-theme="dark"]{
+  --bg:#0b1522;--surface:#121f30;--surface2:#16263a;--ink:#e6eef7;--ink2:#b7c6d8;--muted:#8a9bb0;--line:#243650;--line2:#1b2b42;
+  --brand:#3fc4bb;--brand-ink:#06231f;--brand-soft:#12383a;--navy:#0a1320;
+  --good:#5fd39a;--good-bg:#123325;--warn:#f0b455;--warn-bg:#3a2b0f;--bad:#f2897d;--bad-bg:#40191a;--info:#79aef0;--info-bg:#16304f;
+  --c1:#3fc4bb;--c2:#79aef0;--c3:#e0a24f;--c4:#b895dd;--c5:#ec8179;--shadow:0 1px 2px #0006,0 6px 22px #0004}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,textarea,select{font:inherit;color:inherit}
+a{color:var(--brand)}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* layout */
+.app{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
+.side{background:linear-gradient(180deg,#0b1c2d 0%,#10283c 100%);color:#dbe7f2;padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:18px;overflow:auto}
+.brand{display:flex;align-items:center;gap:11px;padding:4px 8px}
+.mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#0b9a93,#087e79);display:grid;place-items:center;flex:none}
+.brand b{display:block;letter-spacing:.14em;font-size:15px;color:#fff}
+.brand small{display:block;color:#8fa6bb;font-size:10px;letter-spacing:.08em;margin-top:1px}
+.nav{display:flex;flex-direction:column;gap:3px}
+.nav button{display:flex;align-items:center;gap:10px;background:none;border:0;color:#b8c9da;padding:11px 12px;border-radius:10px;cursor:pointer;text-align:left;font-weight:600;transition:background .15s,color .15s}
+.nav button:hover{background:#ffffff0f;color:#fff}
+.nav button[aria-current="page"]{background:#ffffff17;color:#fff;box-shadow:inset 3px 0 0 #3fc4bb}
+.nav svg{width:18px;height:18px;flex:none}
+.side h4{margin:6px 10px 6px;font-size:10px;letter-spacing:.14em;color:#7f95aa;font-weight:700}
+.caps{display:flex;flex-direction:column;gap:6px;padding:0 6px}
+.cap{display:flex;align-items:center;gap:8px;font-size:12px;color:#b8c9da}
+.dot{width:8px;height:8px;border-radius:50%;background:#5a6b7e;flex:none}
+.dot.on{background:#3fd29a;box-shadow:0 0 0 3px #3fd29a26}
+.dot.off{background:#d9a441}
+.side .spacer{flex:1}
+.side .foot{font-size:11px;color:#7f95aa;padding:0 8px}
+.theme{background:#ffffff10;border:0;color:#dbe7f2;border-radius:10px;padding:9px 12px;cursor:pointer;font-weight:600;display:flex;gap:8px;align-items:center;justify-content:center}
+.theme:hover{background:#ffffff1c}
+
+.main{min-width:0;padding:30px clamp(16px,3vw,44px) 64px;max-width:1500px;width:100%;margin:0 auto}
+.topbar{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:0 0 24px;padding:22px 24px;border:1px solid var(--line);border-radius:20px;background:radial-gradient(ellipse at 95% 0%,color-mix(in srgb,var(--brand) 12%,transparent),transparent 42%),var(--surface);box-shadow:var(--shadow)}
+.eyebrow{color:var(--brand);font-size:11px;font-weight:800;letter-spacing:.16em}
+h1.title{margin:4px 0 4px;font-size:clamp(24px,2.6vw,32px);letter-spacing:-.03em;line-height:1.15}
+.lede{margin:0;color:var(--muted);max-width:62ch}
+.btn.menu-btn{display:none}
+
+/* primitives */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.card>header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line2)}
+.card>header h3{margin:0;font-size:14px;letter-spacing:-.005em}
+.card>.pad{padding:18px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 14px;font-weight:650;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-size:13px}
+.btn:hover{background:var(--surface2)}
+a.btn{text-decoration:none;color:var(--ink)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 35%,var(--line))}
+.btn.sm{padding:6px 10px;font-size:12px;border-radius:8px}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn svg{width:15px;height:15px}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:3px 10px;font-size:11px;font-weight:750;background:var(--surface2);color:var(--ink2);border:1px solid var(--line);white-space:nowrap}
+.pill.completed,.pill.good,.pill.fetched,.pill.verified{background:var(--good-bg);color:var(--good);border-color:transparent}
+.pill.partial,.pill.completed_with_limitations,.pill.warn,.pill.Moderate,.pill.partial_src{background:var(--warn-bg);color:var(--warn);border-color:transparent}
+.pill.failed,.pill.bad,.pill.error,.pill.cancelled{background:var(--bad-bg);color:var(--bad);border-color:transparent}
+.pill.running,.pill.queued,.pill.info{background:var(--info-bg);color:var(--info);border-color:transparent}
+.pill.Strong{background:var(--good-bg);color:var(--good);border-color:transparent}
+.pill.Weak,.pill.Abstained{background:var(--surface2);color:var(--muted)}
+.pill .pulse{width:7px;height:7px;border-radius:50%;background:currentColor;animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.muted{color:var(--muted)}.small{font-size:12px}.mono{font-family:var(--mono);font-size:12px}
+.hint{font-size:12px;color:var(--muted);margin-top:6px}
+.empty{padding:46px 20px;text-align:center;color:var(--muted)}
+.empty .ico{width:52px;height:52px;border-radius:15px;background:var(--surface2);display:grid;place-items:center;margin:0 auto 12px;color:var(--brand)}
+.empty b{display:block;color:var(--ink);margin-bottom:4px}
+.alert{padding:11px 13px;border-radius:10px;font-size:13px;margin:0 0 12px;border:1px solid transparent}
+.alert.bad{background:var(--bad-bg);color:var(--bad)}
+.alert.warn{background:var(--warn-bg);color:var(--warn)}
+.alert.info{background:var(--info-bg);color:var(--info)}
+.alert.good{background:var(--good-bg);color:var(--good)}
+
+/* KPI row */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
+.kpi{padding:19px 20px;position:relative;overflow:hidden;transition:transform .16s ease,box-shadow .16s ease}.kpi:hover{transform:translateY(-2px);box-shadow:0 12px 28px #10243a12}
+.kpi .lab{font-size:11.5px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.kpi .val{font-size:32px;font-weight:800;letter-spacing:-.03em;line-height:1.15;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.kpi::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent,var(--brand))}
+
+.grid2{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;margin-bottom:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:16px}
+.chartbox{padding:16px 18px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12px;color:var(--ink2)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.donutwrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.bars .row{display:grid;grid-template-columns:minmax(80px,150px) 1fr 34px;gap:10px;align-items:center;font-size:12.5px;margin:7px 0}
+.bars .track{height:9px;background:var(--surface2);border-radius:6px;overflow:hidden;border:1px solid var(--line2)}
+.bars .fill{height:100%;border-radius:6px;background:var(--c2)}
+.bars .row span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bars .row b{text-align:right;font-variant-numeric:tabular-nums}
+
+/* table */
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--surface2);white-space:nowrap;position:sticky;top:0}
+td{padding:11px 14px;border-bottom:1px solid var(--line2);vertical-align:top}
+tbody tr:hover{background:var(--surface2)}
+tr.clickable{cursor:pointer}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.flash{animation:flash 2.2s}
+@keyframes flash{0%,60%{background:var(--warn-bg)}100%{background:transparent}}
+
+/* new-run form */
+.form{display:grid;gap:14px}
+label.f>span{display:block;font-size:12px;font-weight:750;margin-bottom:6px;color:var(--ink2)}
+input[type=text],input[type=search],input[type=password],textarea,select{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 22%,transparent)}
+textarea{min-height:92px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1px solid var(--line);background:var(--surface2);border-radius:99px;padding:4px 11px;font-size:12px;cursor:pointer;color:var(--ink2)}
+.chip:hover{border-color:var(--brand);color:var(--brand)}
+.chip.on{background:var(--brand-soft);color:var(--brand);border-color:transparent;font-weight:700}
+.check{display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--ink2)}
+.check input{margin-top:3px;accent-color:var(--brand)}
+.angles{display:grid;gap:10px}
+.angle{padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:var(--surface2)}
+.angle b{font-size:13px}.angle p{margin:3px 0 0;font-size:12px;color:var(--muted)}
+
+/* run header */
+.runhead{padding:20px 22px;margin-bottom:16px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:start}
+.runhead h2{margin:0;font-size:24px;letter-spacing:-.02em}
+.runhead .meta{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:6px;font-size:12px;color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.stepper{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;margin-top:18px;grid-column:1/-1}
+.step{font-size:11px;color:var(--muted);text-align:center}
+.step i{display:block;height:6px;border-radius:4px;background:var(--line);margin-bottom:6px;position:relative;overflow:hidden}
+.step.done i{background:var(--brand)}
+.step.now i{background:var(--line)}
+.step.now i::after{content:"";position:absolute;inset:0;background:var(--brand);animation:sweep 1.3s infinite}
+@keyframes sweep{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.step.now,.step.done{color:var(--ink2);font-weight:650}
+.step.bad i{background:var(--bad)}
+
+.verdict{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;padding:20px 22px;margin-bottom:16px;align-items:center}
+.gauge{width:150px}
+.verdict h3{margin:0 0 6px;font-size:12px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.verdict .disc{font-size:19px;font-weight:700;letter-spacing:-.01em;line-height:1.35;margin:0 0 8px}
+.verdict ul{margin:8px 0 0;padding-left:18px;color:var(--ink2);font-size:13px}
+.verdict li{margin:3px 0}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:0 0 16px;overflow-x:auto}
+.tabs button{background:none;border:0;padding:11px 15px;font-weight:650;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;margin-bottom:-1px}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected="true"]{color:var(--brand);border-bottom-color:var(--brand)}
+.tabs .count{background:var(--surface2);border:1px solid var(--line);border-radius:99px;font-size:11px;padding:0 7px;margin-left:6px;color:var(--ink2)}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;align-items:center}
+.toolbar input[type=search]{max-width:280px}.toolbar select{max-width:230px;width:auto}
+
+/* cards in lists */
+.stack{display:grid;gap:12px}
+.item{padding:16px 18px}
+.item h4{margin:0 0 4px;font-size:15px;letter-spacing:-.01em}
+.item .row{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);margin:4px 0}
+.quote{margin:8px 0 0;padding:9px 12px;border-left:3px solid var(--brand);background:var(--surface2);border-radius:0 8px 8px 0;font-size:12.5px;color:var(--ink2);overflow-wrap:anywhere}
+.quote mark{background:var(--warn-bg);color:var(--ink);padding:0 2px;border-radius:3px;font-weight:700}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:12px 0}
+.kv div{background:var(--surface2);border:1px solid var(--line2);border-radius:10px;padding:8px 11px}
+.kv small{display:block;color:var(--muted);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+.kv b{font-size:15px;font-variant-numeric:tabular-nums}
+.idlink{font-family:var(--mono);font-size:11.5px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:1px 6px;cursor:pointer;color:var(--ink2);margin-right:4px}
+.idlink:hover{border-color:var(--brand);color:var(--brand)}
+.conf{display:inline-block;width:46px;height:6px;border-radius:4px;background:var(--line);vertical-align:middle;margin-right:6px;overflow:hidden}
+.conf i{display:block;height:100%;background:var(--brand)}
+.delta{font-weight:800;font-variant-numeric:tabular-nums}
+.delta.up{color:var(--info)}.delta.down{color:var(--warn)}
+.sect{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:20px 0 8px;font-weight:750}
+details.more>summary{cursor:pointer;font-size:12px;color:var(--brand);font-weight:650;margin-top:8px}
+
+.timeline{position:relative;padding-left:22px;margin:0;list-style:none}
+.timeline::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.timeline li{position:relative;padding:0 0 16px}
+.timeline li::before{content:"";position:absolute;left:-20px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--surface);border:2px solid var(--brand)}
+.timeline b{font-size:13px}.timeline .t{font-size:11px;color:var(--muted)}
+.timeline pre{margin:6px 0 0;padding:8px 10px;background:var(--surface2);border:1px solid var(--line2);border-radius:8px;font:11.5px/1.45 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ink2)}
+.limits{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.limits li{padding:10px 13px;background:var(--warn-bg);color:var(--ink);border-radius:10px;font-size:13px;border-left:3px solid var(--warn)}
+
+.toast{position:fixed;right:18px;bottom:18px;background:var(--navy);color:#fff;padding:11px 16px;border-radius:11px;box-shadow:var(--shadow);z-index:50;font-size:13px;max-width:360px}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);padding:0;max-width:440px;width:calc(100% - 32px);box-shadow:0 20px 60px #0006}
+dialog::backdrop{background:#0b152299}
+dialog .pad{padding:20px}
+
+@media(max-width:1000px){.grid2,.grid3{grid-template-columns:1fr}}
+@media(max-width:860px){
+  .app{grid-template-columns:1fr}
+  .side{position:fixed;inset:0 auto 0 0;width:260px;z-index:40;transform:translateX(-100%);transition:transform .2s}
+  body.nav-open .side{transform:none}
+  body.nav-open::after{content:"";position:fixed;inset:0;background:#0007;z-index:30}
+  .btn.menu-btn{display:inline-flex}
+  .runhead{grid-template-columns:1fr}.actions{justify-content:flex-start}
+  .verdict{grid-template-columns:1fr}.gauge{width:130px}
+  .stepper{grid-template-columns:repeat(4,1fr);row-gap:10px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{.side,.actions,.tabs,.toolbar,.menu-btn{display:none!important}.app{display:block}.card{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" aria-label="Primary">
+    <div class="brand">
+      <div class="mark"><svg width="22" height="22" viewBox="0 0 32 32" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l6-7 5 5 7-10 6 8"/></svg></div>
+      <div><b>SIGNALTRACE</b><small>EVIDENCE-FIRST RESEARCH</small></div>
+    </div>
+    <nav class="nav" aria-label="Sections">
+      <button data-nav="overview" aria-current="page"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="2.5" width="6" height="7" rx="1.5"/><rect x="11.5" y="2.5" width="6" height="4" rx="1.5"/><rect x="2.5" y="12.5" width="6" height="5" rx="1.5"/><rect x="11.5" y="9.5" width="6" height="8" rx="1.5"/></svg>Overview</button>
+      <button data-nav="analytics"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5V10m4.7 6.5V4m4.6 12.5V7m4.7 9.5V2.5"/></svg>Analytics</button>
+      <button data-nav="signals"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 14.5l4-4 3 2 7-8"/><path d="M12.5 4.5h4v4"/></svg>Signal explorer</button>
+      <button data-nav="companies"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="2.5" width="14" height="15" rx="2"/><path d="M6.5 6h2m3 0h2m-7 4h2m3 0h2m-7 4h2m3 0h2"/></svg>Companies</button>
+      <button data-nav="evidence"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2.5h7l3 3v12H5z"/><path d="M12 2.5v4h3M7.5 10h5M7.5 13h5"/></svg>Evidence ledger</button>
+      <button data-nav="new"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5L18 18M9 6.5v5M6.5 9h5"/></svg>New research</button>
+      <button data-nav="runs"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h12M4 10h12M4 15h8"/></svg>Research history</button>
+      <button data-nav="reports"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2.5h8l4 4v11H4z"/><path d="M12 2.5v4h4M7 10h6M7 13h6"/></svg>Reports</button>
+    </nav>
+    <div>
+      <h4>SYSTEM</h4>
+      <div class="caps" id="caps"><div class="cap"><span class="dot"></span>Checking…</div></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="theme" id="themeBtn" type="button" aria-label="Toggle colour theme"><span id="themeIcon">◐</span> <span id="themeLabel">Theme</span></button>
+    <div class="foot">Winter Coders · ATMOS 2026 · Track A<br>Research &amp; education only. Not investment advice.</div>
+  </aside>
+
+  <main class="main" id="main" tabindex="-1">
+    <div class="topbar">
+      <div>
+        <div class="eyebrow" id="eyebrow">ATMOS 2026 · TRACK A</div>
+        <h1 class="title" id="pageTitle">See what the numbers are hiding.</h1>
+        <p class="lede" id="pageLede">Financial research, connected evidence and transparent calculations — with uncertainty made explicit.</p>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn menu-btn" id="menuBtn" type="button" aria-label="Open menu">☰ Menu</button>
+        <button class="btn primary" id="topNew" type="button"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg>New research</button>
+      </div>
+    </div>
+    <div id="view"></div>
+  </main>
+</div>
+
+<dialog id="authDlg"><form method="dialog" class="pad" id="authForm">
+  <h3 style="margin:0 0 6px">API token required</h3>
+  <p class="muted small" style="margin:0 0 12px">This server is protected. Enter the token configured as <span class="mono">SIGNALTRACE_API_TOKEN</span>. It is kept in this browser only.</p>
+  <input type="password" id="authToken" placeholder="Token" autocomplete="off">
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="btn primary" value="ok">Continue</button></div>
+</form></dialog>
+
+<script>
+"use strict";
+/* ---------- helpers ---------- */
+const $ = (s, r=document) => r.querySelector(s), $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtDate = s => { if(!s) return "—"; const d = new Date(s); return isNaN(d) ? esc(s) : d.toLocaleString(undefined,{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}); };
+const ago = s => { const d = new Date(s); if(isNaN(d)) return ""; const m = Math.round((Date.now()-d)/60000); return m<1?"just now":m<60?m+"m ago":m<1440?Math.round(m/60)+"h ago":Math.round(m/1440)+"d ago"; };
+const store = { get(k){ try{ return localStorage.getItem(k) }catch{ return null } }, set(k,v){ try{ localStorage.setItem(k,v) }catch{} } };
+let TOKEN = store.get("st_token") || "";
+const STAGES = [["planning","Plan"],["source_discovery","Discover"],["retrieval","Retrieve"],["extraction","Extract"],["analysis","Analyse"],["hypotheses","Hypothesise"],["skeptic","Challenge"],["report","Report"]];
+const STATUS_LABEL = {completed:"Completed",completed_with_limitations:"Completed with limitations",partial:"Completed with limitations",abstained:"Abstained",needs_input:"Needs input",failed:"Failed",running:"Running",queued:"Queued",cancelled:"Cancelled",Abstained:"Abstained"};
+const ICON = {
+  html:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3H5.5A1.5 1.5 0 004 4.5v11A1.5 1.5 0 005.5 17h9a1.5 1.5 0 001.5-1.5V8z"/><path d="M11 3v5h5"/></svg>',
+  pdf:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v10m0 0l-4-4m4 4l4-4M4 16h12"/></svg>',
+  stop:'<svg viewBox="0 0 20 20" fill="currentColor"><rect x="5" y="5" width="10" height="10" rx="2"/></svg>',
+  trash:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12M8 6V4h4v2m-6 0l.7 10h6.6L14 6"/></svg>',
+  redo:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 10a6 6 0 11-2-4.5M16 3v4h-4"/></svg>',
+  search:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="9" r="6"/><path d="M14 14l4 4"/></svg>'
+};
+function toast(msg){ const t=document.createElement("div"); t.className="toast"; t.setAttribute("role","status"); t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),3200); }
+
+async function api(path, opts={}){
+  const headers = {"Content-Type":"application/json"}; if(TOKEN) headers.Authorization = "Bearer "+TOKEN;
+  const r = await fetch(path, {...opts, headers:{...headers, ...(opts.headers||{})}});
+  const body = await r.json().catch(()=>({}));
+  if(r.status===401){ await askToken(); return api(path, opts); }
+  if(!r.ok) throw Error(typeof body.detail==="string" ? body.detail : (Array.isArray(body.detail) ? body.detail.map(d=>d.msg).join("; ") : `Request failed (${r.status})`));
+  return body;
+}
+function askToken(){ return new Promise(res=>{ const d=$("#authDlg"); $("#authForm").onsubmit=()=>{ TOKEN=$("#authToken").value.trim(); store.set("st_token",TOKEN); res(); }; d.showModal(); }); }
+const tokenQS = () => TOKEN ? `?token=${encodeURIComponent(TOKEN)}` : "";
+
+/* ---------- charts (inline SVG, theme-aware via CSS vars) ---------- */
+function donut(parts, size=140){
+  const total = parts.reduce((a,p)=>a+p.value,0); const r=size/2-12, c=2*Math.PI*r;
+  if(!total) return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="No data"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--line)" stroke-width="16"/><text x="50%" y="52%" text-anchor="middle" fill="var(--muted)" font-size="12">No runs</text></svg>`;
+  let off=0;
+  const segs = parts.filter(p=>p.value>0).map(p=>{ const len=p.value/total*c; const s=`<circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${p.color}" stroke-width="16" stroke-dasharray="${len-1.5} ${c-len+1.5}" stroke-dashoffset="${-off}" transform="rotate(-90 ${size/2} ${size/2})"><title>${esc(p.label)}: ${p.value}</title></circle>`; off+=len; return s; }).join("");
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="${esc(parts.map(p=>p.label+" "+p.value).join(", "))}"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--line2)" stroke-width="16"/>${segs}<text x="50%" y="49%" text-anchor="middle" fill="var(--ink)" font-size="26" font-weight="800">${total}</text><text x="50%" y="63%" text-anchor="middle" fill="var(--muted)" font-size="11">runs</text></svg>`;
+}
+function hbars(rows, color="var(--c2)"){
+  if(!rows.length) return `<p class="muted small">Nothing to chart yet.</p>`;
+  const max = Math.max(...rows.map(r=>r[1]),1);
+  return `<div class="bars">${rows.map(([l,v])=>`<div class="row"><span title="${esc(l)}">${esc(l)}</span><div class="track"><div class="fill" style="width:${v/max*100}%;background:${color}"></div></div><b>${v}</b></div>`).join("")}</div>`;
+}
+function columns(rows, h=110){
+  if(!rows.length) return `<p class="muted small">No runs yet.</p>`;
+  const max=Math.max(...rows.map(r=>r[1]),1);
+  return `<svg viewBox="0 0 300 ${h+20}" width="100%" role="img" aria-label="Runs per day">${rows.map((r,i)=>{ const bh=Math.max(3,r[1]/max*h), slot=300/Math.max(rows.length,6), bw=Math.min(slot-8,34), x=i*slot+(slot-bw)/2; return `<g><rect x="${x}" y="${h-bh}" width="${bw}" height="${bh}" rx="4" fill="var(--c1)"><title>${esc(r[0])}: ${r[1]} run(s)</title></rect><text x="${x+bw/2}" y="${h+14}" text-anchor="middle" font-size="9" fill="var(--muted)">${esc(r[0].slice(5))}</text></g>`; }).join("")}</svg>`;
+}
+function trend(series, kind){
+  const pts = series.map(p=>({x:p.period, y:parseFloat(p.value), id:p.observation_id})).filter(p=>!isNaN(p.y));
+  if(pts.length<2) return "";
+  const W=320,H=120,pl=8,pr=8,pt=14,pb=24; const ys=pts.map(p=>p.y); let lo=Math.min(...ys), hi=Math.max(...ys); if(lo===hi){lo-=1;hi+=1} const pad=(hi-lo)*.18; lo-=pad; hi+=pad;
+  const X=i=>pl+i*(W-pl-pr)/(pts.length-1), Y=v=>pt+(hi-v)/(hi-lo)*(H-pt-pb);
+  const d=pts.map((p,i)=>`${i?"L":"M"}${X(i).toFixed(1)} ${Y(p.y).toFixed(1)}`).join(" ");
+  const area=`${d} L${X(pts.length-1)} ${H-pb} L${X(0)} ${H-pb} Z`;
+  const labelEvery = Math.ceil(pts.length/5);
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Trend of ${pts.length} dated observations"><path d="${area}" fill="var(--c1)" opacity=".10"/><path d="${d}" fill="none" stroke="var(--c1)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>${pts.map((p,i)=>`<g><circle cx="${X(i)}" cy="${Y(p.y)}" r="4" fill="var(--surface)" stroke="var(--c1)" stroke-width="2.2"><title>${esc(p.x)}: ${p.y}${kind==="basis_points"?"%":""} (${esc(p.id||"")})</title></circle><text x="${X(i)}" y="${Y(p.y)-8}" text-anchor="middle" font-size="9.5" fill="var(--ink2)" font-weight="700">${p.y}</text>${i%labelEvery===0||i===pts.length-1?`<text x="${X(i)}" y="${H-8}" text-anchor="${i===0?"start":i===pts.length-1?"end":"middle"}" font-size="9" fill="var(--muted)">${esc(p.x)}</text>`:""}</g>`).join("")}</svg>`;
+}
+function gauge(strength, abstained){
+  // 4-segment meter: Abstained / Weak / Moderate / Strong
+  const lvl = abstained?0:({Weak:1,Moderate:2,Strong:3}[strength]||1);
+  const labels=["Abstained","Weak","Moderate","Strong"], cols=["var(--muted)","var(--c5)","var(--c3)","var(--c1)"];
+  const segs=[0,1,2,3].map(i=>`<rect x="${i*38}" y="0" width="34" height="10" rx="4" fill="${i<=lvl&&lvl>0?cols[lvl]:"var(--line)"}"/>`).join("");
+  return `<div class="gauge" role="img" aria-label="Evidence strength: ${labels[lvl]}"><svg viewBox="0 0 148 10" width="100%">${segs}</svg><div style="font-size:26px;font-weight:800;letter-spacing:-.03em;margin-top:8px;color:${cols[lvl]}">${labels[lvl]}</div><div class="muted small">evidence strength</div></div>`;
+}
+
+/* ---------- state ---------- */
+const S = { health:null, view:"overview", runId:null, tab:"summary", data:null, poll:null, obsFilter:"", obsMetric:"", srcFilter:"all", draft:{company:"",focus:"",urls:"",bg:true} };
+
+/* ---------- shell ---------- */
+function setHeader(eyebrow, title, lede){ $("#eyebrow").textContent=eyebrow; $("#pageTitle").textContent=title; $("#pageLede").textContent=lede||""; document.title = title.length>40 ? "SIGNALTRACE" : `${title} · SIGNALTRACE`; }
+function setNav(name){ $$("[data-nav]").forEach(b=>{ if(b.dataset.nav===name) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); }); document.body.classList.remove("nav-open"); }
+function applyTheme(t){ if(t) document.documentElement.setAttribute("data-theme",t); const dark = (t||document.documentElement.getAttribute("data-theme"))==="dark" || (!t && matchMedia("(prefers-color-scheme: dark)").matches && !document.documentElement.getAttribute("data-theme")); $("#themeIcon").textContent = dark?"☀":"☾"; $("#themeLabel").textContent = dark?"Light mode":"Dark mode"; }
+$("#themeBtn").onclick=()=>{ const cur=document.documentElement.getAttribute("data-theme") || (matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"); const nx=cur==="dark"?"light":"dark"; store.set("st_theme",nx); applyTheme(nx); };
+$("#menuBtn").onclick=()=>document.body.classList.toggle("nav-open");
+$$("[data-nav]").forEach(b=>b.onclick=()=>go(b.dataset.nav==="overview"?"#/": "#/"+b.dataset.nav));
+$("#topNew").onclick=()=>go("#/new");
+function go(h){ if(location.hash===h) route(); else location.hash=h; }
+
+async function loadHealth(){
+  try{ const h=await api("/api/health"); S.health=h; const c=h.capabilities||{};
+    const row=(on,t,off)=>`<div class="cap"><span class="dot ${on?"on":"off"}"></span>${esc(on?t:off||t)}</div>`;
+    $("#caps").innerHTML = row(true,"API online") + row(h.search_configured,"Web search",h.search?.status||"Search off · manual URLs") + row(h.llm_configured,"LLM extraction",`${h.llm?.status||"unavailable"} · ${h.llm?.model||"no model configured"}`) + row(true,"Provenance gate") + row(true,"PDF / HTML export") + (c.auth_required?row(true,"Token auth on"):"");
+  }catch{ $("#caps").innerHTML='<div class="cap"><span class="dot"></span>API unavailable</div>'; }
+}
+
+/* ---------- router ---------- */
+function route(){
+  clearInterval(S.poll);
+  const h=location.hash.replace(/^#\/?/,""); const [a,b]=h.split("/");
+  if(a==="run" && b) return viewRun(decodeURIComponent(b));
+  if(a==="new") return viewNew();
+  if(a==="runs") return viewRuns();
+  if(a==="analytics") return viewAnalytics();
+  if(a==="signals") return viewSignals();
+  if(a==="companies") return viewCompanies();
+  if(a==="evidence") return viewEvidence();
+  if(a==="reports") return viewReports();
+  return viewOverview();
+}
+window.addEventListener("hashchange", route);
+
+
+/* ---------- intelligence workspaces ---------- */
+const strengthRank = v => ({Strong:3,Moderate:2,Weak:1,Abstained:0}[v] ?? 0);
+const shortId = v => String(v||"").slice(0,8);
+const runLink = r => `#/run/${encodeURIComponent(r.id)}`;
+async function fetchWorkspace(){
+  const runs = await api("/api/research-runs?limit=100");
+  const reports = await Promise.all(runs.map(async r => {
+    try { return {run:r, report:await api(`/api/research-runs/${encodeURIComponent(r.id)}/report`)}; }
+    catch { return {run:r, report:{}}; }
+  }));
+  return {runs, reports};
+}
+function workspaceError(e){ $("#view").innerHTML=`<div class="alert bad"><b>Could not load this workspace.</b><br>${esc(e.message||e)}</div>`; }
+async function viewAnalytics(){
+  setNav("analytics"); setHeader("PERFORMANCE & COVERAGE","Analytics","Measure research coverage, evidence quality and pipeline outcomes using saved runs only.");
+  $("#view").innerHTML='<div class="muted">Aggregating saved research…</div>';
+  try {
+    const [st, data] = await Promise.all([api("/api/dashboard/stats"), fetchWorkspace()]);
+    const sc=st.status||{}, sg=st.strength||{}, daily=st.runs_by_day||[];
+    const total=Math.max(1,st.runs||0), completed=(sc.completed||0)+(sc.partial||0);
+    const rate=Math.round(completed/total*100);
+    $("#view").innerHTML=`
+      <div class="kpis">
+        <div class="card kpi" style="--accent:var(--c1)"><div class="lab">Research runs</div><div class="val">${st.runs||0}</div><div class="sub">saved investigations</div></div>
+        <div class="card kpi" style="--accent:var(--c2)"><div class="lab">Source records</div><div class="val">${st.sources||0}</div><div class="sub">with retrieval metadata</div></div>
+        <div class="card kpi" style="--accent:var(--c3)"><div class="lab">Verified observations</div><div class="val">${st.observations||0}</div><div class="sub">excerpt-checked claims</div></div>
+        <div class="card kpi" style="--accent:var(--c4)"><div class="lab">Deterministic calculations</div><div class="val">${st.calculations||0}</div><div class="sub">compatible metric comparisons</div></div>
+        <div class="card kpi" style="--accent:var(--c5)"><div class="lab">Abstention rate</div><div class="val">${st.abstention_rate==null?"—":Math.round(st.abstention_rate*100)+"%"}</div><div class="sub">runs without qualifying evidence</div></div>
+      </div>
+      <div class="grid2">
+        <section class="card"><header><h3>Research activity</h3><span class="pill">Last 14 active dates</span></header><div class="chartbox">${daily.length?hbars(daily.map(([d,n])=>[d,n]),"var(--c2)"):'<div class="empty">No saved activity to chart yet.</div>'}</div></section>
+        <section class="card"><header><h3>Evidence strength distribution</h3></header><div class="chartbox">${hbars(["Strong","Moderate","Weak","Abstained"].map(k=>[k,sg[k]||0]),"var(--c1)")}<p class="hint">Highest evidence strength per run. These are research classifications, not investment ratings.</p></div></section>
+      </div>
+      <div class="grid2">
+        <section class="card"><header><h3>Run status</h3></header><div class="chartbox">${donut([["completed","Completed","var(--c1)"],["partial","Partial","var(--c3)"],["running","Running","var(--c2)"],["failed","Failed","var(--c5)"],["cancelled","Cancelled","var(--muted)"]].map(([k,label,color])=>({label,value:sc[k]||0,color})))}</div></section>
+        <section class="card"><header><h3>Most observed metrics</h3></header><div class="chartbox">${hbars(st.top_metrics||[],"var(--c4)")||'<div class="empty">No observations available yet.</div>'}</div></section>
+      </div>
+      <p class="hint">Coverage metrics describe the records in this local database. They do not measure investment returns or predictive accuracy.</p>`;
+  } catch(e){workspaceError(e);}
+}
+async function viewSignals(){
+  setNav("signals"); setHeader("SIGNAL INTELLIGENCE","Signal explorer","Search across saved hypotheses and verified observations. Open any result to inspect the full evidence trail.");
+  $("#view").innerHTML='<div class="muted">Indexing saved signals…</div>';
+  try {
+    const {reports}=await fetchWorkspace(); const items=[];
+    for(const {run,report} of reports){
+      for(const h of (report.hypotheses||[])) items.push({kind:"Hypothesis",run,h,metric:h.statement||"Candidate hypothesis",strength:h.evidence_strength||"Weak",detail:h.rationale||"",ids:h.observation_ids||h.supporting_observation_ids||[]});
+      for(const o of (report.observations||[])) items.push({kind:"Observation",run,h:o,metric:o.metric_name||o.metric_canonical||"Financial observation",strength:o.confidence||o.confidence_level||"Verified",detail:`${o.raw_value??o.value??"Value unavailable"} ${o.unit||""} · ${o.period||o.period_label||"period not specified"}`,ids:[o.id||o.observation_id].filter(Boolean)});
+    }
+    $("#view").innerHTML=`<section class="card"><header><h3>Signal inventory</h3><span class="pill">${items.length} saved records</span></header><div class="pad"><div class="toolbar"><input type="search" id="signalSearch" placeholder="Search company, metric or finding…"><select id="signalKind"><option value="all">All record types</option><option>Hypothesis</option><option>Observation</option></select><select id="signalStrength"><option value="all">All evidence levels</option><option>Strong</option><option>Moderate</option><option>Weak</option><option>Abstained</option></select></div><div id="signalResults"></div></div></section>
+    <p class="hint">Confidence and strength labels are displayed as stored by the research pipeline. They are not buy/sell recommendations.</p>`;
+    const render=()=>{
+      const q=$("#signalSearch").value.toLowerCase(), kind=$("#signalKind").value, strength=$("#signalStrength").value;
+      const filtered=items.filter(x=>(kind==="all"||x.kind===kind)&&(strength==="all"||x.strength===strength)&&`${x.run.company_input} ${x.metric} ${x.detail} ${x.strength}`.toLowerCase().includes(q));
+      $("#signalResults").innerHTML=filtered.length?`<div class="tablewrap"><table><thead><tr><th>Record</th><th>Company / run</th><th>Evidence</th><th>Details</th><th></th></tr></thead><tbody>${filtered.map(x=>`<tr><td><span class="pill ${esc(x.strength)}">${esc(x.kind)}</span><div style="margin-top:6px"><b>${esc(x.metric)}</b></div></td><td><b>${esc(x.run.company_input)}</b><div class="mono muted">${shortId(x.run.id)}</div></td><td>${esc(x.strength)}</td><td class="muted">${esc(x.detail).slice(0,260)}</td><td><a class="btn sm" href="${runLink(x.run)}">Inspect</a></td></tr>`).join("")}</tbody></table></div>`:'<div class="empty"><b>No matching signals</b>Try a broader search or complete a research run first.</div>';
+    };
+    ["signalSearch","signalKind","signalStrength"].forEach(id=>$("#"+id).addEventListener(id==="signalSearch"?"input":"change",render)); render();
+  } catch(e){workspaceError(e);}
+}
+async function viewCompanies(){
+  setNav("companies"); setHeader("COMPANY INTELLIGENCE","Companies","A consolidated view of companies previously researched in this SIGNALTRACE workspace.");
+  $("#view").innerHTML='<div class="muted">Loading company coverage…</div>';
+  try {
+    const {runs,reports}=await fetchWorkspace(); const groups=new Map();
+    for(const {run,report} of reports){
+      const key=(run.company_input||"Unknown company").trim().toLowerCase();
+      if(!groups.has(key)) groups.set(key,{name:run.company_input||"Unknown company",runs:[],sources:0,observations:0,hypotheses:0,last:run.created_at});
+      const g=groups.get(key); g.runs.push(run); g.sources+=run.source_count||0; g.observations+=(report.observations||[]).length; g.hypotheses+=(report.hypotheses||[]).length;
+      if(new Date(run.created_at)>new Date(g.last))g.last=run.created_at;
+    }
+    const rows=[...groups.values()].sort((a,b)=>new Date(b.last)-new Date(a.last));
+    $("#view").innerHTML=`<div class="kpis"><div class="card kpi" style="--accent:var(--c1)"><div class="lab">Companies covered</div><div class="val">${rows.length}</div><div class="sub">distinct names in saved runs</div></div><div class="card kpi" style="--accent:var(--c2)"><div class="lab">Research runs</div><div class="val">${runs.length}</div><div class="sub">across all companies</div></div><div class="card kpi" style="--accent:var(--c3)"><div class="lab">Verified observations</div><div class="val">${rows.reduce((n,r)=>n+r.observations,0)}</div><div class="sub">aggregated from reports</div></div></div>
+      <section class="card"><header><h3>Company coverage</h3><input type="search" id="companySearch" placeholder="Filter companies…" style="max-width:240px"></header><div id="companyTable" class="tablewrap"></div></section>`;
+    const render=()=>{const q=$("#companySearch").value.toLowerCase();const filtered=rows.filter(x=>x.name.toLowerCase().includes(q));$("#companyTable").innerHTML=filtered.length?`<table><thead><tr><th>Company</th><th class="num">Runs</th><th class="num">Sources</th><th class="num">Observations</th><th class="num">Hypotheses</th><th>Last researched</th><th></th></tr></thead><tbody>${filtered.map(g=>`<tr><td><b>${esc(g.name)}</b></td><td class="num">${g.runs.length}</td><td class="num">${g.sources}</td><td class="num">${g.observations}</td><td class="num">${g.hypotheses}</td><td class="muted small">${fmtDate(g.last)}</td><td><a class="btn sm" href="${runLink(g.runs[0])}">Latest run</a></td></tr>`).join("")}</tbody></table>`:'<div class="empty">No companies match this filter.</div>';};
+    $("#companySearch").addEventListener("input",render);render();
+  } catch(e){workspaceError(e);}
+}
+async function viewEvidence(){
+  setNav("evidence"); setHeader("SOURCE PROVENANCE","Evidence ledger","Inspect public-source records, retrieval status, publication metadata and excerpts across saved research.");
+  $("#view").innerHTML='<div class="muted">Collecting source records…</div>';
+  try {
+    const {runs,reports}=await fetchWorkspace(); const all=[];
+    for(const {run} of reports){try{const sources=await api(`/api/research-runs/${encodeURIComponent(run.id)}/sources`);for(const src of sources)all.push({...src,company:run.company_input,runId:run.id});}catch{}}
+    $("#view").innerHTML=`<section class="card"><header><h3>Source registry</h3><span class="pill">${all.length} records</span></header><div class="pad"><div class="toolbar"><input type="search" id="evidenceSearch" placeholder="Search title, publisher, URL or excerpt…"><select id="evidenceStatus"><option value="all">All retrieval statuses</option><option value="fetched">Fetched</option><option value="error">Error</option><option value="pending">Pending</option></select></div><div id="evidenceResults"></div></div></section><p class="hint">A retrieved source is not automatically corroborating evidence. Each claim still needs excerpt verification and independent-source evaluation.</p>`;
+    const render=()=>{const q=$("#evidenceSearch").value.toLowerCase(),status=$("#evidenceStatus").value;const list=all.filter(x=>(status==="all"||x.fetch_status===status)&&`${x.title} ${x.publisher} ${x.url} ${x.excerpt} ${x.company}`.toLowerCase().includes(q));$("#evidenceResults").innerHTML=list.length?`<div class="tablewrap"><table><thead><tr><th>Source / publisher</th><th>Company</th><th>Status</th><th>Publication date</th><th>Evidence excerpt</th></tr></thead><tbody>${list.map(x=>`<tr><td><a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer"><b>${esc(x.title||x.url)}</b></a><div class="muted small">${esc(x.publisher||new URL(x.url).hostname)}</div><div class="mono muted">${esc(shortId(x.runId))}</div></td><td>${esc(x.company)}</td><td><span class="pill ${esc(x.fetch_status)}">${esc(x.fetch_status||"unknown")}</span>${x.error?`<div class="small muted">${esc(x.error).slice(0,130)}</div>`:""}</td><td class="muted small">${esc(x.publication_date||"Not identified")}</td><td class="quote">${esc(x.excerpt||"No excerpt stored").slice(0,380)}</td></tr>`).join("")}</tbody></table></div>`:'<div class="empty"><b>No source records found</b>Start a run with public URLs or configured search.</div>';};
+    ["evidenceSearch","evidenceStatus"].forEach(id=>$("#"+id).addEventListener(id==="evidenceSearch"?"input":"change",render));render();
+  } catch(e){workspaceError(e);}
+}
+async function viewReports(){
+  setNav("reports"); setHeader("RESEARCH OUTPUTS","Reports","Open or export completed research reports. Reports are generated from saved observations and evidence, not demo placeholders.");
+  $("#view").innerHTML='<div class="muted">Loading report index…</div>';
+  try {
+    const {runs,reports}=await fetchWorkspace();
+    $("#view").innerHTML=`<section class="card"><header><h3>Report library</h3><span class="pill">${runs.length} research runs</span></header>${runs.length?`<div class="tablewrap"><table><thead><tr><th>Company / focus</th><th>Status</th><th class="num">Sources</th><th>Evidence strength</th><th>Updated</th><th>Exports</th></tr></thead><tbody>${reports.map(({run,report})=>`<tr><td><a href="${runLink(run)}"><b>${esc(run.company_input)}</b></a><div class="muted small">${esc(run.focus||"General research")}</div><div class="mono muted">${shortId(run.id)}</div></td><td>${statusPill(run)}</td><td class="num">${run.source_count||0}</td><td><span class="pill ${esc(report.evidence_strength||"Weak")}">${esc(report.evidence_strength||"Not assessed")}</span></td><td class="muted small">${fmtDate(run.completed_at||run.created_at)}</td><td><div style="display:flex;gap:6px;flex-wrap:wrap"><a class="btn sm" href="/api/research-runs/${encodeURIComponent(run.id)}/export.html${tokenQS()}" target="_blank" rel="noopener">HTML</a><a class="btn sm" href="/api/research-runs/${encodeURIComponent(run.id)}/export.pdf${tokenQS()}" target="_blank" rel="noopener">PDF</a></div></td></tr>`).join("")}</tbody></table></div>`:'<div class="empty"><b>No reports yet</b>Complete a research run and the report will appear here.</div>'}</section>`;
+  } catch(e){workspaceError(e);}
+}
+
+/* ---------- overview ---------- */
+async function viewOverview(){
+  setNav("overview"); setHeader("ATMOS 2026 · TRACK A","See what the numbers are hiding.","Financial research, connected evidence and transparent calculations — with uncertainty made explicit.");
+  $("#view").innerHTML=`<div class="muted">Loading dashboard…</div>`;
+  try{
+    const [st, runs] = await Promise.all([api("/api/dashboard/stats"), api("/api/research-runs?limit=8")]);
+    const sc=st.status||{}, sg=st.strength||{};
+    const statusParts=[["completed","Completed","var(--c1)"],["partial","Partial","var(--c3)"],["failed","Failed","var(--c5)"],["cancelled","Cancelled","var(--muted)"],["running","Running","var(--c2)"]].map(([k,l,c])=>({label:l,value:sc[k]||0,color:c}));
+    const strengthRows=["Strong","Moderate","Weak","Abstained"].map(k=>[k,sg[k]||0]);
+    $("#view").innerHTML=`
+    <div class="kpis">
+      <div class="card kpi" style="--accent:var(--c1)"><div class="lab">Research runs</div><div class="val">${st.runs}</div><div class="sub">${(sc.completed||0)} completed · ${(sc.partial||0)} partial</div></div>
+      <div class="card kpi" style="--accent:var(--c2)"><div class="lab">Sources retrieved</div><div class="val">${st.sources}</div><div class="sub">with hash &amp; timestamp</div></div>
+      <div class="card kpi" style="--accent:var(--c3)"><div class="lab">Verified observations</div><div class="val">${st.observations}</div><div class="sub">exact-excerpt gate</div></div>
+      <div class="card kpi" style="--accent:var(--c4)"><div class="lab">Calculations</div><div class="val">${st.calculations}</div><div class="sub">deterministic, decimal</div></div>
+      <div class="card kpi" style="--accent:var(--c5)"><div class="lab">Abstention rate</div><div class="val">${st.abstention_rate==null?"—":Math.round(st.abstention_rate*100)+"%"}</div><div class="sub">no discovery without evidence</div></div>
+    </div>
+    <div class="grid2">
+      <section class="card"><header><h3>Recent runs</h3><button class="btn sm" onclick="go('#/runs')">View all</button></header>
+        ${runs.length?`<div class="tablewrap"><table><thead><tr><th>Company</th><th>Status</th><th class="num">Sources</th><th>Started</th></tr></thead><tbody>${runs.map(r=>`<tr class="clickable" tabindex="0" data-open="${esc(r.id)}"><td><b>${esc(r.company_input)}</b>${r.focus?`<div class="muted small">${esc(r.focus)}</div>`:""}</td><td>${statusPill(r)}</td><td class="num">${r.source_count}</td><td class="muted small">${ago(r.created_at)}</td></tr>`).join("")}</tbody></table></div>`:`<div class="empty"><div class="ico">${ICON.search}</div><b>No research yet</b>Start a run to see sources, observations and evidence strength here.<div style="margin-top:14px"><button class="btn primary" onclick="go('#/new')">Start research</button></div></div>`}
+      </section>
+      <section class="card"><header><h3>Run outcomes</h3></header><div class="chartbox"><div class="donutwrap">${donut(statusParts)}<div class="legend" style="flex-direction:column;margin:0">${statusParts.map(p=>`<span><i style="background:${p.color}"></i>${p.label} · <b>${p.value}</b></span>`).join("")}</div></div></div></section>
+    </div>
+    <div class="grid3">
+      <section class="card"><header><h3>Evidence strength</h3></header><div class="chartbox">${hbars(strengthRows,"var(--c1)")}<p class="hint">Highest-scoring hypothesis per run. “Abstained” = no hypothesis cleared the gate.</p></div></section>
+      <section class="card"><header><h3>Most-observed metrics</h3></header><div class="chartbox">${hbars(st.top_metrics||[],"var(--c2)")}</div></section>
+      <section class="card"><header><h3>Runs per day</h3></header><div class="chartbox">${columns(st.runs_by_day||[])}</div></section>
+    </div>
+    <section class="card"><header><h3>How SIGNALTRACE decides</h3></header><div class="pad" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+      ${[["1 · Retrieve","Public pages and PDFs are fetched through an SSRF-safe client; hash and timestamp are stored."],["2 · Verify","An observation is kept only if its excerpt is verbatim in the source and contains the metric, value and period."],["3 · Compute","Changes are calculated in decimal; ratios use basis points; mismatched bases are refused."],["4 · Challenge","Hypotheses are tested with contradiction search; leads are not counted until validated."],["5 · Abstain","Weak or conflicting evidence ends in an explicit abstention, never a forced discovery."]].map(([t,d])=>`<div><b>${t}</b><p class="muted small" style="margin:4px 0 0">${d}</p></div>`).join("")}
+    </div></section>`;
+    bindOpen();
+  }catch(e){ $("#view").innerHTML=`<div class="alert bad">${esc(e.message)}</div>`; }
+}
+function statusPill(r){ const live=["queued","running"].includes(r.status); return `<span class="pill ${esc(r.status)}">${live?'<span class="pulse"></span>':""}${esc(STATUS_LABEL[r.status]||r.status)}</span>`; }
+function bindOpen(){ $$("[data-open]").forEach(el=>{ const f=()=>go("#/run/"+encodeURIComponent(el.dataset.open)); el.onclick=f; el.onkeydown=e=>{ if(e.key==="Enter") f(); }; }); }
+
+/* ---------- all runs ---------- */
+async function viewRuns(){
+  setNav("runs"); setHeader("HISTORY","All research runs","Every run is stored with its sources, observations, calculations and audit log.");
+  $("#view").innerHTML=`<div class="muted">Loading…</div>`;
+  try{
+    const runs=await api("/api/research-runs?limit=100");
+    $("#view").innerHTML=`<section class="card">${runs.length?`<div class="tablewrap"><table><thead><tr><th>Company</th><th>Focus</th><th>Status</th><th class="num">Sources</th><th>Created</th><th></th></tr></thead><tbody>${runs.map(r=>`<tr class="clickable" tabindex="0" data-open="${esc(r.id)}"><td><b>${esc(r.company_input)}</b><div class="mono muted">${esc(r.id.slice(0,8))}</div></td><td class="muted">${esc(r.focus||"—")}</td><td>${statusPill(r)}</td><td class="num">${r.source_count}</td><td class="muted small">${fmtDate(r.created_at)}</td><td style="text-align:right"><button class="btn sm danger" data-del="${esc(r.id)}" title="Delete run" aria-label="Delete run ${esc(r.company_input)}">${ICON.trash}</button></td></tr>`).join("")}</tbody></table></div>`:`<div class="empty"><div class="ico">${ICON.search}</div><b>No runs yet</b>Your research history will appear here.</div>`}</section>`;
+    bindOpen();
+    $$("[data-del]").forEach(b=>b.onclick=async e=>{ e.stopPropagation(); if(!confirm("Delete this run and all its stored evidence? This cannot be undone.")) return; try{ await api("/api/research-runs/"+b.dataset.del,{method:"DELETE"}); toast("Run deleted"); viewRuns(); loadHealth(); }catch(err){ toast(err.message); } });
+  }catch(e){ $("#view").innerHTML=`<div class="alert bad">${esc(e.message)}</div>`; }
+}
+
+/* ---------- new research ---------- */
+const EXAMPLE_FOCI=["Loan growth vs asset quality","Funding mix and dependency","Profit quality","Narrative vs filings over time"];
+async function viewNew(){
+  setNav("new"); setHeader("NEW RESEARCH","Start a research run","Name any bank, NBFC or financial-services company. Add public filing URLs, or enable search to discover sources.");
+  let plan={angles:[]}; try{ plan=await api("/api/stages"); }catch{}
+  const d=S.draft, h=S.health||{};
+  $("#view").innerHTML=`<div class="grid2" style="grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)">
+  <section class="card"><header><h3>Research brief</h3><span class="pill info">Live public sources</span></header><div class="pad">
+    ${!h.search_configured?`<div class="alert warn"><b>Search is off.</b> Paste at least one public investor-relations, results or filing URL below — the run will use only what you provide.</div>`:""}
+    ${!h.llm_configured?`<div class="alert info"><b>LLM key not set.</b> Extraction uses deterministic table and sentence rules where possible. Signal generation is calculation-driven and does not require an LLM; unavailable AI can still reduce extraction coverage.</div>`:""}
+    <form class="form" id="runForm" novalidate>
+      <label class="f"><span>Company name or ticker</span><input type="text" id="fCompany" required minlength="2" maxlength="200" placeholder="e.g. a bank or NBFC" value="${esc(d.company)}" autocomplete="off"></label>
+      <label class="f"><span>Research focus <small class="muted">(optional)</small></span><input type="text" id="fFocus" maxlength="300" placeholder="e.g. loan growth vs asset quality" value="${esc(d.focus)}"><div class="chips" style="margin-top:8px">${EXAMPLE_FOCI.map(f=>`<button type="button" class="chip" data-focus="${esc(f)}">${esc(f)}</button>`).join("")}</div></label>
+      <label class="f"><span>Public source URLs <small class="muted">(one per line, max 12)</small></span><textarea id="fUrls" placeholder="https://company.example/investor-relations&#10;https://company.example/quarterly-results.pdf">${esc(d.urls)}</textarea><div class="hint" id="urlHint">HTTP/HTTPS only. Private, loopback and credentialed URLs are rejected.</div></label>
+      <label class="check"><input type="checkbox" id="fBg" ${d.bg?"checked":""}><span><b>Run in background</b><br><span class="muted small">Watch live progress and cancel any time. Untick to wait for the result in one request.</span></span></label>
+      <div id="formErr"></div>
+      <div style="display:flex;gap:10px;align-items:center"><button class="btn primary" id="runBtn" type="submit">Start research</button><span class="muted small">Research &amp; education only — not investment advice.</span></div>
+    </form></div></section>
+  <section class="card"><header><h3>What the agent will investigate</h3></header><div class="pad"><div class="angles">${(plan.angles||[]).map(a=>`<div class="angle"><b>${esc(a.angle)}</b><p>${esc(a.test)}</p><div class="chips" style="margin-top:7px">${a.metrics.map(m=>`<span class="pill">${esc(m)}</span>`).join("")}</div></div>`).join("")||'<p class="muted">Plan unavailable.</p>'}</div></div></section></div>`;
+  $$("[data-focus]").forEach(b=>b.onclick=()=>{ $("#fFocus").value=b.dataset.focus; });
+  $("#fUrls").addEventListener("input",()=>{ const n=$("#fUrls").value.split(/\r?\n/).filter(x=>x.trim()).length; $("#urlHint").textContent = n? `${n} URL${n>1?"s":""} · HTTP/HTTPS only. Private, loopback and credentialed URLs are rejected.` : "HTTP/HTTPS only. Private, loopback and credentialed URLs are rejected."; });
+  $("#runForm").onsubmit=async e=>{
+    e.preventDefault(); const company=$("#fCompany").value.trim(); const urls=$("#fUrls").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    S.draft={company, focus:$("#fFocus").value, urls:$("#fUrls").value, bg:$("#fBg").checked};
+    const err=$("#formErr"); err.innerHTML="";
+    if(company.length<2){ err.innerHTML='<div class="alert bad">Enter a company name (at least 2 characters).</div>'; return; }
+    const bad=urls.find(u=>!/^https?:\/\//i.test(u)); if(bad){ err.innerHTML=`<div class="alert bad">“${esc(bad.slice(0,80))}” is not an http(s) URL.</div>`; return; }
+    const btn=$("#runBtn"); btn.disabled=true; btn.textContent=S.draft.bg?"Starting…":"Researching public sources…";
+    try{ const r=await api("/api/research-runs",{method:"POST",body:JSON.stringify({company,focus:$("#fFocus").value.trim()||null,urls,background:S.draft.bg})}); S.draft={company:"",focus:"",urls:"",bg:true}; go("#/run/"+encodeURIComponent(r.id)); }
+    catch(ex){ err.innerHTML=`<div class="alert bad">${esc(ex.message)}</div>`; btn.disabled=false; btn.textContent="Start research"; }
+  };
+}
+
+/* ---------- run detail ---------- */
+async function viewRun(id){
+  setNav("runs"); S.runId=id; setHeader("RESEARCH RUN","Loading…","");
+  $("#view").innerHTML=`<div class="muted">Loading run…</div>`;
+  await refreshRun(true);
+}
+async function refreshRun(first){
+  const id=S.runId; if(!id) return;
+  try{
+    const run=await api(`/api/research-runs/${encodeURIComponent(id)}`);
+    const live=["queued","running"].includes(run.status);
+    const [sources,report,stageData]=await Promise.all([api(`/api/research-runs/${encodeURIComponent(id)}/sources`), api(`/api/research-runs/${encodeURIComponent(id)}/report`), api(`/api/research-runs/${encodeURIComponent(id)}/stages`).catch(()=>({stages:[]}))]);
+    if(S.runId!==id) return;
+    S.data={run,sources,report,stages:stageData.stages||[],live};
+    renderRun(first);
+    clearInterval(S.poll);
+    if(live) S.poll=setInterval(()=>refreshRun(false),1600);
+  }catch(e){ clearInterval(S.poll); $("#view").innerHTML=`<div class="alert bad">${esc(e.message)}</div><button class="btn" onclick="go('#/runs')">Back to runs</button>`; }
+}
+function stepperHtml(run){
+  const cur=STAGES.findIndex(s=>s[0]===run.progress_stage); const finished=!["queued","running"].includes(run.status);
+  const doneAll=run.status==="completed"||run.status==="partial"||run.status==="completed_with_limitations"||run.status==="abstained";
+  return `<div class="stepper" role="list" aria-label="Pipeline progress">${STAGES.map(([k,l],i)=>{ let cls=""; if(doneAll||(run.progress_stage==="done")) cls="done"; else if(finished) cls=(cur>=0&&i<cur)?"done":(i===cur?"bad":""); else cls=cur<0?(i===0?"now":""):(i<cur?"done":i===cur?"now":""); return `<div class="step ${cls}" role="listitem"><i></i>${l}</div>`; }).join("")}</div>`;
+}
+function renderRun(first){
+  const {run,sources,report,live}=S.data; const hyps=report.hypotheses||[], obs=report.observations||[], calcs=report.calculations||[], audit=report.audit_log||[], lim=report.limitations||[];
+  setHeader("RESEARCH RUN", "Research run", run.focus?`Focus: ${run.focus}`:"No specific focus — all Track A angles considered.");
+  const abstained = !hyps.length || !["Strong","Moderate"].includes(report.evidence_strength);
+  const cancelBtn = live?`<button class="btn danger" id="cancelBtn" ${run.cancel_requested?"disabled":""}>${ICON.stop}${run.cancel_requested?"Cancelling…":"Cancel"}</button>`:"";
+  const head=`<section class="card runhead"><div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><h2>${esc(run.company_input)}</h2>${statusPill(run)}</div>
+      <div class="meta"><span>Run <span class="mono">${esc(run.id.slice(0,8))}</span></span><span>Started ${fmtDate(run.started_at||run.created_at)}</span>${run.completed_at?`<span>Finished ${fmtDate(run.completed_at)}</span>`:""}<span>${report.independent_clusters||0} independent source cluster(s)</span></div>
+      <p class="muted" style="margin:10px 0 0;max-width:80ch">${esc(run.summary)}</p></div>
+    <div class="actions">${cancelBtn}${live?"":`<a class="btn" href="/api/research-runs/${encodeURIComponent(run.id)}/export.html${tokenQS()}" target="_blank" rel="noopener">${ICON.html}HTML</a><a class="btn" href="/api/research-runs/${encodeURIComponent(run.id)}/export.pdf${tokenQS()}" target="_blank" rel="noopener">${ICON.pdf}PDF</a><button class="btn" id="rerunBtn">${ICON.redo}Re-run</button><button class="btn danger" id="delBtn" aria-label="Delete run">${ICON.trash}</button>`}</div>
+    ${stepperHtml(run)}</section>`;
+  const verdict=`<section class="card verdict">${gauge(report.evidence_strength,abstained)}<div><h3>The discovery</h3><p class="disc">${esc(report.discovery)}</p>
+      ${(report.why_it_matters||[]).length?`<ul>${report.why_it_matters.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}</div></section>`;
+  const tabs=[["summary","Overview"],["hyp","Hypotheses",hyps.length],["obs","Observations",obs.length],["calc","Calculations",calcs.length],["src","Sources",sources.length],["audit","Audit trail",audit.length],["lim","Limitations",lim.length]];
+  const ui=`${head}${verdict}<div class="tabs" role="tablist">${tabs.map(([k,l,c])=>`<button role="tab" aria-selected="${S.tab===k}" data-tab="${k}">${l}${c!=null?`<span class="count">${c}</span>`:""}</button>`).join("")}</div><div id="tabBody"></div>`;
+  $("#view").innerHTML=ui;
+  $$("[data-tab]").forEach(b=>b.onclick=()=>{ S.tab=b.dataset.tab; $$("[data-tab]").forEach(x=>x.setAttribute("aria-selected",x===b)); renderTab(); });
+  const cb=$("#cancelBtn"); if(cb) cb.onclick=async()=>{ cb.disabled=true; try{ await api(`/api/research-runs/${run.id}/cancel`,{method:"POST"}); toast("Cancellation requested — stops at the next checkpoint"); refreshRun(false); }catch(e){ toast(e.message); cb.disabled=false; } };
+  const db=$("#delBtn"); if(db) db.onclick=async()=>{ if(!confirm("Delete this run and all stored evidence? This cannot be undone.")) return; try{ await api("/api/research-runs/"+run.id,{method:"DELETE"}); toast("Run deleted"); go("#/runs"); }catch(e){ toast(e.message); } };
+  const rr=$("#rerunBtn"); if(rr) rr.onclick=()=>{ S.draft={company:run.company_input,focus:run.focus||"",urls:sources.filter(s=>s.source_type==="manual").map(s=>s.url).join("\n"),bg:true}; go("#/new"); };
+  renderTab();
+}
+function renderTab(){
+  const el=$("#tabBody"); if(!el) return; const t=S.tab; const {run,sources,report}=S.data;
+  el.innerHTML = ({summary:tabSummary,hyp:tabHyp,obs:tabObs,calc:tabCalc,src:tabSrc,audit:tabAudit,lim:tabLim}[t]||tabSummary)(S.data);
+  bindTab(t);
+}
+
+function tabSummary({run,sources,report,stages=[],live}){
+  const obs=report.observations||[], calcs=report.calculations||[], hyps=report.hypotheses||[];
+  const fetched=sources.filter(s=>s.fetch_status==="fetched").length, errs=sources.filter(s=>!["fetched"].includes(s.fetch_status)).length;
+  const heur=obs.filter(o=>(o.validation_flags||[]).includes("heuristic_extraction")).length;
+  const kp=(l,v,s,c)=>`<div class="card kpi" style="--accent:${c}"><div class="lab">${l}</div><div class="val">${v}</div><div class="sub">${s}</div></div>`;
+  const best=hyps.slice().sort((a,b)=>({Strong:3,Moderate:2,Weak:1}[b.evidence_strength]||0)-({Strong:3,Moderate:2,Weak:1}[a.evidence_strength]||0))[0];
+  const sparkCalc=calcs.find(c=>(c.series||[]).length>=2);
+  return `<div class="kpis">${kp("Sources",sources.length,`${fetched} readable · ${errs} failed`,"var(--c2)")}${kp("Observations",obs.length,heur?`${heur} rule-based, low confidence`:"excerpt-verified","var(--c3)")}${kp("Calculations",calcs.length,"decimal, basis-checked","var(--c4)")}${kp("Hypotheses",hyps.length,best?`lead: ${best.evidence_strength}`:"none cleared the gate","var(--c1)")}</div>
+  ${stages.length?`<section class="card"><header><h3>Pipeline audit</h3><span class="muted small">Persisted stage outcomes</span></header><div class="pad"><div class="angles" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">${stages.map(st=>`<div class="angle"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc((st.stage||"").replace(/_/g," "))}</b><span class="pill ${st.status==="completed"?"good":st.status==="failed"?"bad":"warn"}">${esc(st.status||"unknown")}</span></div><p>${esc(Object.entries(st).filter(([k])=>!['stage','status','timestamp'].includes(k)).map(([k,v])=>`${k.replace(/_/g,' ')}: ${v}`).join(' · ')||fmtDate(st.timestamp))}</p></div>`).join("")}</div></div></section>`:""}
+  <div class="grid2">
+    <section class="card"><header><h3>Counterargument</h3></header><div class="pad"><p style="margin:0">${esc(report.counterargument)}</p><div class="sect">Falsification condition</div><p style="margin:0">${esc(report.falsification_condition)}</p></div></section>
+    <section class="card"><header><h3>${sparkCalc?`Trend · ${esc(sparkCalc.metric_name)}`:"Trend"}</h3>${sparkCalc?`<span class="delta ${deltaClass(sparkCalc)}">${deltaText(sparkCalc)}</span>`:""}</header><div class="chartbox">${sparkCalc?trend(sparkCalc.series,sparkCalc.kind)+`<p class="hint">${esc(sparkCalc.start_period)} → ${esc(sparkCalc.end_period)} · basis: ${esc(sparkCalc.reporting_basis)} · ${esc(sparkCalc.id)}</p>`:`<div class="empty" style="padding:24px"><b>No comparable periods yet</b>A trend needs two dated observations of the same metric, unit and reporting basis.</div>`}</div></section>
+  </div>
+  ${(report.research_plan||[]).length?`<section class="card"><header><h3>Research angles considered</h3></header><div class="pad"><div class="angles" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">${report.research_plan.map(a=>`<div class="angle"><b>${esc(a.angle)}</b><p>${esc(a.test)}</p></div>`).join("")}</div></div></section>`:""}
+  <p class="muted small" style="margin-top:14px">${esc(report.methodology)} ${esc(report.disclaimer)}</p>`;
+}
+const deltaText=c=> c.kind==="basis_points" ? `${parseFloat(c.result_basis_points)>0?"+":""}${c.result_basis_points} bps` : c.kind==="growth_acceleration" ? `${parseFloat(c.result_percent)>0?"+":""}${c.result_percent} pp` : c.kind==="cagr" ? `${parseFloat(c.result_percent)>0?"+":""}${c.result_percent}% CAGR` : `${parseFloat(c.result_percent)>0?"+":""}${c.result_percent}%`;
+const deltaClass=c=> parseFloat(c.kind==="basis_points"?c.result_basis_points:c.result_percent)>=0?"up":"down";
+
+function tabHyp({report}){
+  const hyps=report.hypotheses||[]; if(!hyps.length) return `<div class="card empty"><div class="ico">${ICON.search}</div><b>No hypothesis cleared the evidence gate</b>This is a valid outcome. Signals are generated from deterministic calculations and only promoted when the evidence gate is met. See Limitations for missing data, comparability issues, or unresolved contradictions.</div>`;
+  const idl=ids=>(ids||[]).map(i=>`<button class="idlink" data-goobs="${esc(i)}">${esc(i)}</button>`).join("")||'<span class="muted small">none</span>';
+  return `<div class="stack">${hyps.map(h=>{ const d=h.evidence_dimensions||{}; return `<article class="card item"><div style="display:flex;justify-content:space-between;gap:10px;align-items:start"><h4>${esc(h.statement)}</h4><span class="pill ${esc(h.evidence_strength||"Weak")}">${esc(h.evidence_strength||"Unscored")}</span></div>
+    <p class="muted" style="margin:2px 0 0">${esc(h.rationale||"")}</p>
+    <div class="kv"><div><small>Supporting obs.</small><b>${d.supporting_observations??"—"}</b></div><div><small>Independent clusters</small><b>${d.distinct_supporting_sources??"—"}</b></div><div><small>Opposing obs.</small><b>${d.opposing_observations??"—"}</b></div><div><small>Calculation</small><b>${d.has_deterministic_calculation?"Yes":"No"}</b></div><div><small>Counter-search hits</small><b>${d.counter_search_results??0}</b></div></div>
+    <div class="small" style="margin:6px 0"><b>Supports:</b> ${idl(h.supporting_observation_ids)} &nbsp; <b>Opposes:</b> ${idl(h.opposing_observation_ids)} &nbsp; <b>Calcs:</b> ${(h.calculation_ids||[]).map(c=>`<button class="idlink" data-gocalc="${esc(c)}">${esc(c)}</button>`).join("")||'<span class="muted">none</span>'}</div>
+    <div class="quote"><b>Falsification:</b> ${esc(h.falsification_condition||"Not specified")}</div>
+    ${(h.alternatives||[]).length?`<div class="quote"><b>Alternative explanations:</b> ${esc(h.alternatives.join("; "))}</div>`:""}
+    ${h.counter_evidence_assessment?`<div class="quote"><b>Counter-evidence (${esc(h.counter_evidence_assessment)}):</b> ${esc(h.counter_evidence_rationale||"")}</div>`:""}
+    <details class="more"><summary>Scoring &amp; counter-search detail</summary><p class="small muted">${esc(h.score_explanation||"")}</p><p class="small"><b>Counter-search:</b> ${esc(h.counter_search_coverage||"Not run")}</p>${(h.counter_search_queries||[]).map(q=>`<div class="mono muted">${esc(q)}</div>`).join("")}${(h.unresolved_questions||[]).length?`<p class="small"><b>Unresolved:</b> ${esc(h.unresolved_questions.join("; "))}</p>`:""}</details></article>`; }).join("")}</div>`;
+}
+
+function markValue(excerpt, value){ const e=esc(excerpt); if(!value) return e; const v=esc(value); const i=e.indexOf(v); return i<0?e:e.slice(0,i)+"<mark>"+v+"</mark>"+e.slice(i+v.length); }
+function tabObs({report}){
+  const obs=report.observations||[]; const metrics=[...new Set(obs.map(o=>o.metric_canonical||o.metric_name))].sort();
+  const q=S.obsFilter.toLowerCase(), m=S.obsMetric;
+  const rows=obs.filter(o=>(!m||(o.metric_canonical||o.metric_name)===m)&&(!q||JSON.stringify(o).toLowerCase().includes(q)));
+  if(!obs.length) return `<div class="card empty"><div class="ico">${ICON.search}</div><b>No verified observations</b>No extracted observation passed provenance and financial validation. Table-based observations may use a period column header; see the source ledger for relevance and parse status.</div>`;
+  return `<div class="toolbar"><input type="search" id="obsQ" placeholder="Search observations…" value="${esc(S.obsFilter)}" aria-label="Search observations"><select id="obsM" aria-label="Filter by metric"><option value="">All metrics (${metrics.length})</option>${metrics.map(x=>`<option ${x===m?"selected":""}>${esc(x)}</option>`).join("")}</select><span class="muted small">${rows.length} of ${obs.length}</span></div>
+  <section class="card"><div class="tablewrap"><table><thead><tr><th>ID</th><th>Metric</th><th class="num">Value</th><th>Period</th><th>Basis</th><th>Confidence</th><th>Source</th></tr></thead><tbody>${rows.map(o=>{ const heur=(o.validation_flags||[]).includes("heuristic_extraction"); return `<tr id="row-${esc(o.id)}"><td class="mono">${esc(o.id)}</td><td><b>${esc(o.metric_canonical||o.metric_name)}</b>${o.metric_canonical&&o.metric_canonical!==o.metric_name?`<div class="muted small">as printed: “${esc(o.metric_name)}”</div>`:""}<div class="quote">${o.table_header_excerpt?`<small>Table header: ${esc(o.table_header_excerpt)}</small><br>`:""}“${markValue(o.excerpt,o.raw_value)}”</div></td><td class="num"><b>${esc(o.raw_value)}</b><div class="muted small">${esc(o.unit)}</div></td><td>${esc(o.period)}</td><td>${esc(o.reporting_basis)}</td><td><span class="conf"><i style="width:${Math.round((o.extraction_confidence||0)*100)}%"></i></span>${Math.round((o.extraction_confidence||0)*100)}%${heur?`<div><span class="pill warn" title="Found by the deterministic rule-based reader">rule-based</span></div>`:""}</td><td>${o.source_url?`<a href="${esc(o.source_url)}" target="_blank" rel="noopener noreferrer">Open ↗</a>`:"—"}<div class="muted small">src #${esc(o.source_id)}</div></td></tr>`; }).join("")||`<tr><td colspan="7" class="muted">No observations match.</td></tr>`}</tbody></table></div></section>`;
+}
+function tabCalc({report}){
+  const calcs=report.calculations||[]; if(!calcs.length) return `<div class="card empty"><div class="ico">${ICON.search}</div><b>No calculation passed the checks</b>A trend needs comparable observations; derived ratios use compatible same-period inputs, and CAGR requires at least three compatible periods. Unknown units are not silently assumed.</div>`;
+  return `<div class="grid2" style="grid-template-columns:repeat(auto-fit,minmax(340px,1fr))">${calcs.map(c=>`<article class="card item" id="calc-${esc(c.id)}"><div style="display:flex;justify-content:space-between;gap:10px;align-items:start"><h4>${esc(c.metric_name)}</h4><span class="delta ${deltaClass(c)}" style="font-size:20px">${deltaText(c)}</span></div>
+    <div class="row"><span>${esc(c.start_period)} → ${esc(c.end_period)}</span><span>basis: ${esc(c.reporting_basis)}</span><span>unit: ${esc(c.unit||"%")}</span></div>
+    ${trend(c.series||[],c.kind)}
+    <div class="kv"><div><small>Start</small><b>${esc(c.start_value??c.start_percent)}</b></div><div><small>End</small><b>${esc(c.end_value??c.end_percent)}</b></div></div>
+    <div class="quote"><span class="mono">${esc(c.formula)}</span></div>
+    <div class="small" style="margin-top:8px"><b>Inputs:</b> ${(c.input_observation_ids||[]).map(i=>`<button class="idlink" data-goobs="${esc(i)}">${esc(i)}</button>`).join("")} <span class="pill good">deterministic</span></div></article>`).join("")}</div>`;
+}
+function tabSrc({sources}){
+  const types=[...new Set(sources.map(s=>s.source_type))]; const f=S.srcFilter;
+  const rows=sources.filter(s=>f==="all"||s.source_type===f||(f==="errors"&&s.fetch_status!=="fetched"));
+  if(!sources.length) return `<div class="card empty"><div class="ico">${ICON.search}</div><b>No sources collected</b>Add public URLs or configure TAVILY_API_KEY for discovery.</div>`;
+  const chip=(k,l)=>`<button class="chip ${f===k?"on":""}" data-srcf="${k}">${l}</button>`;
+  return `<div class="toolbar"><div class="chips">${chip("all",`All (${sources.length})`)}${types.map(t=>chip(t,esc(t.replace(/_/g," "))))}${chip("errors","Problems")}</div></div>
+  <div class="stack">${rows.map(s=>{ const cl=s.cluster||{}; return `<article class="card item"><div style="display:flex;justify-content:space-between;gap:10px;align-items:start"><h4 style="overflow-wrap:anywhere"><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title||s.url)}</a></h4><span class="pill ${esc(s.fetch_status)}">${esc(s.fetch_status)}</span></div>
+    <div class="row"><span class="mono" style="overflow-wrap:anywhere">${esc(s.publisher||"publisher unknown")}</span><span>${esc(s.source_type.replace(/_/g," "))}</span><span>published: ${esc(s.publication_date||"not stated")}</span><span>retrieved ${fmtDate(s.retrieved_at)}</span><span>relevance ${Number(s.relevance_score||0).toFixed(1)}</span><span>parse: ${esc(s.parse_status||"unknown")}</span>${s.ocr_required?`<span class="pill warn">OCR required</span>`:""}${cl.cluster?`<span class="pill info" title="${esc(cl.reason||"independent of other sources")}">cluster ${cl.cluster}${cl.reason?" · shared":""}</span>`:""}</div>
+    ${s.error?`<div class="alert bad" style="margin:8px 0 0">${esc(s.error)}</div>`:""}
+    ${(s.relevance_reasons||[]).length?`<div class="muted small" style="margin-top:6px">Relevance signals: ${esc(s.relevance_reasons.join(", "))}</div>`:""}
+    ${s.excerpt?`<details class="more"><summary>Show extracted text (${(s.content_chars||s.excerpt.length).toLocaleString()} chars)</summary><div class="quote">${esc(s.excerpt.slice(0,1400))}${s.excerpt.length>1400?"…":""}</div></details>`:""}
+    <div class="mono muted" style="margin-top:8px;overflow-wrap:anywhere">sha256 ${esc((s.content_hash||"").slice(0,24)||"—")}…</div></article>`; }).join("")||'<p class="muted">No sources match this filter.</p>'}</div>`;
+}
+function tabAudit({report}){
+  const a=report.audit_log||[]; if(!a.length) return `<div class="card empty"><b>No audit events yet</b></div>`;
+  return `<section class="card"><div class="pad"><ol class="timeline">${a.map(e=>`<li><b>${esc((e.stage||"").replace(/_/g," "))}</b> — ${esc(e.message)}<div class="t">${fmtDate(e.timestamp)}</div>${e.details&&Object.keys(e.details).length?`<pre>${esc(JSON.stringify(e.details,null,1))}</pre>`:""}</li>`).join("")}</ol></div></section>`;
+}
+function tabLim({report}){
+  const l=report.limitations||[]; return `<section class="card"><header><h3>Limitations &amp; coverage gaps</h3></header><div class="pad">${l.length?`<ul class="limits">${l.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:'<p class="muted">No limitations recorded.</p>'}<p class="muted small" style="margin-top:14px">${esc(report.disclaimer)}</p></div></section>`;
+}
+function bindTab(t){
+  $$("[data-goobs]").forEach(b=>b.onclick=()=>jump("obs","row-"+b.dataset.goobs));
+  $$("[data-gocalc]").forEach(b=>b.onclick=()=>jump("calc","calc-"+b.dataset.gocalc));
+  const q=$("#obsQ"); if(q){ q.oninput=()=>{ S.obsFilter=q.value; const pos=q.selectionStart; renderTab(); const n=$("#obsQ"); n.focus(); n.setSelectionRange(pos,pos); }; }
+  const m=$("#obsM"); if(m) m.onchange=()=>{ S.obsMetric=m.value; renderTab(); };
+  $$("[data-srcf]").forEach(b=>b.onclick=()=>{ S.srcFilter=b.dataset.srcf; renderTab(); });
+}
+function jump(tab,id){ S.tab=tab; S.obsFilter=""; S.obsMetric=""; $$("[data-tab]").forEach(x=>x.setAttribute("aria-selected",x.dataset.tab===tab)); renderTab(); const el=document.getElementById(id); if(el){ el.scrollIntoView({block:"center",behavior:"smooth"}); el.classList.add("flash"); setTimeout(()=>el.classList.remove("flash"),2300); } }
+
+/* ---------- boot ---------- */
+applyTheme(store.get("st_theme")); loadHealth(); route();
+</script>
+</body>
+</html>
